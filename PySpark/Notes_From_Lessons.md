@@ -259,7 +259,9 @@ spark_partition_id // this variable will return the partition id
 # Lesson 12
 ## Understand Spark UI, Read CSV Files and Read Modes | Spark InferSchema Option | Drop Malformed
 
-### Read CSV Data
+### Spark Hands on
+
+#### Read CSV Data
 Spark can read from a csv file. Reading in Spark is a transformation, not an action. Hence, when performing a read on a csv file, spark should not run a job. However, spark will run a single task in order to acquire metadata. Depending on what options are enabled, spark will acquire more metadata, for instance; schema inference.
 
 ```
@@ -316,10 +318,93 @@ df = (spark.read.format("csv").options(**_options).load("path/to/file"))
 # Lesson 13
 ## Read Complex File Formats | Parquet | ORC | Performance benefit of Parquet |Recursive File Lookup
 
+### Spark Hands on
+
+#### Data formats
+
+Parquet
+```
+df = spark.read.format("parquet").load("path/to/file")
+
+// incase of folder with several parquet file parts
+df = spark.read.format("parquet").load("path/to/parent/folder/*.parquiet")
+```
+
+ORC
+```
+df = spark.read.format("orc").load("path/to/file")
+
+// incase of folder with several ORC file parts
+df = spark.read.format("orc").load("path/to/parent/folder/*.ors")
+```
+
+#### Columnar Benefits - Both ORC and Parquet  
+You will gain execution time efficiency when selecting only required amount of columns.
 
 
 # Lesson 14
+## Read, Parse or Flatten JSON data | JSON file with Schema | from_json | to_json | Multiline JSON
+
+### Spark Hands on
+
+#### JSON
+The json data can be on a single line (single line json), or over multiple lines (multi line json).
+
+```
+df_singleLine = spark.read.format("json").load("path/to/file")
+
+df_multiLine = spark.read.format("json").option("multiLine", True).load("path/to/file")
+```
+Schema enforcment
+```
+_schema = "..."
+
+df_schema = spark.read.format("json").schema(_schema).load("path/to/file")
+``` 
+
+
+# Lesson 15
+## How Spark Writes data | Write modes in Spark | Write data with Partition | Default Parallelism
+
+### Spark Hands on
+
+#### Write in Spark
+In Spark data is written to file in the partitions it is divided in. When a file is written, a folder is created and then each partition is written in a seperate "part" file, within that folder.   
+
+To get the number of cores available for the spark session use: `spark.sparkContext.defaultParallelism`. 
+
+To get the number of partitions the data is divided in use: `dataframe.rdd.getNumPartitions()`.
+
+Writing the data:
+```
+// writing to parquet
+df.write.format("parquet").save("path/to/file")
+// this will create a folder, and each partition will create as many parts/files.
+
+// we can add the partition id 
+from pyspark.sql.functions import spark_partition_id
+df.withColumn("partition_id", spark_partition_id())
+```
+
+#### Write modes
+APPEND - Data will always be added, no changes to previous data is made.
+
+OVERWRITE - Data will always be overwritten. Spark will clean the folder then write the new data.  
+
+IGNORE - Will check if data is available, if yes nothing will be done, otherwise the data will be written.  
+
+ERROR - If data exist the job will fail.
+
+#### One output file
+To get one file with spark, the repartition function can be utilized.
+```
+df.repartition(1).write.format("csv").option("header", True).save("path/to/file")
+```
+Rnemaing is not possible with PySpark
+
+# Lesson 16
 ## 
 
+### Spark Hands on
 
 
