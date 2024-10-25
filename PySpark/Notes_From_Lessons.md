@@ -403,8 +403,129 @@ df.repartition(1).write.format("csv").option("header", True).save("path/to/file"
 Rnemaing is not possible with PySpark
 
 # Lesson 16
+## Understand Spark Execution on Cluster | Cluster Manager | Cluster Deployment Modes | Spark Submit
+
+### Spark Hands on
+
+Spark Executors are not the same as a spark node. Executors have various cores, and these cores are worker nodes. 
+
+
+# Lesson 17
+## User Defined Function (UDF) | How Spark works with UDF | How to register Python UDF
+
+### Spark Hands on
+
+#### UDF - User Defined Functions
+In a spark application/cluster when runnning an UDF it is important to understand how the function is ran. The spark driver will copy the UDF to each individual worker node, when this is available the worker node will spinn up a python process. The process will then recieve the data from each node, which by this point has been serialized in a format python understands. The data will be run row by row. When the process has been finished the result will be returned to the JVM process.   
+The Spark engine does not have control over the python process (as this lies outside the JVM process), hence if the process exceeds any limits this will not be handled by the spark session. For instance, this can lead to memoryOutOfBounds error.  
+
+Important to note:
+- Data needs to be serialized and deserialized (to and from python process)
+- Costly python process needs to be spinn up
+- Data needs to be processed row by row
+
+How to replace python UDFs:
+- Use higher order functions
+- Write UDF in Java/Scala, as this is already available in the JVM
+
+
+#### UDF Code Implementation
+The below code will make the UDF available for the dataframe API.
+```
+// some custom function
+def add(x, y):
+    return = x + y
+
+// register UDF
+from pyspark.sql.functions import udf
+
+add_udf = udf(add)
+
+// use udf
+df.withColumn("udf_column_name", add_udf("column_name1", "column_name2"))
+```
+
+Make the UDF available for Spark SQL or Spark SQL expressions.
+```
+// how to register the udf
+spark.udf.register("add_sql_udf", add, "double") // parameters: name, function, return data type 
+
+// use it with expr
+from pyspark.sql.functions import expr
+
+df.withColumn("udf_column_name", expr("add_sql_udf(column_name1, column_name2)"))
+```
+
+NB: python UDFs are very expensive, use it if strictly needed.
+
+
+#### Workflow of creating an UDF in Scala/Java
+1. Write the function in either
+2. Register the udf
+3. Use the UDF with expr()
+
+
+
+# Lesson 18
+## Understand DAG, Explain Plans & Spark Shuffle with Tasks |Skipped Stage |Benefit of Shuffle Write
+
+### Spark Hands on
+
+The DAG (Directed Ascyclic Graph) for a dataframe can be printed by running `df_sum.explain`. To read the explain plan, you need to read it from bottup up.
+
+
+
+# Lesson 19
+## Understand and Optimize Shuffle in Spark
+
+### Spark Hands on
+
+
+#### Benchmarking - noop
+When wanting to evaluate the performance of a sequence of PySpark operation that ends with a write action, it is possible to run it using `noop`. This will not write/save the data anywhere, but it will run through all operations and capture performance metrics.
+```
+df.write.format("noop").mode("overwrite").save  ()
+```   
+
+#### Spark Partitions
+Spark by defualt when reshuffeling will use 200 partitions. It is possible to configure the defualt number. 
+```
+// Check Spark Shuffel Partition setting
+spark.conf.get("spark.sql.shuffel.partitions")
+
+// Set the Spark Shuffel Partition setting
+spark.conf.get("spark.sql.shuffel.partitions", n_partitions)
+```
+
+What is the appropriate configuration on the shuffel partitions?
+- Depends on the job. Too few partitions can lead to extensive write and read on shuffel, which can turn into a bottleneck. This could aslo lead to "out of memory errors" due to too many writes during a shuffel. 
+
+#### Partitioned Data
+Properly partitioned data can result in performance advantages when read in PySpark as data partitions can be divided among available shuffle partitions.
+
+#### Best practices
+1. Always try to work with good shuffle, try and reduce number of shuffles as it is a costly operation.
+2. Repartition your data, make sure yur data is properly partitioned.
+3. Filter yur data as early as possible, this will reduce the amount of data shuffled.
+
+
+# Lesson 20
+## Data Caching in Spark | Cache vs Persist | Spark Storage Level with Persist |Partial Data Caching
+
+### Spark Hands on
+#### Data Persitence
+
+
+
+
+# Lesson 21
 ## 
 
 ### Spark Hands on
 
+
+# Lesson 22
+## 
+
+### Spark Hands on
 
