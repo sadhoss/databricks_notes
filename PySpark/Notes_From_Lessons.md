@@ -513,19 +513,75 @@ Properly partitioned data can result in performance advantages when read in PySp
 ## Data Caching in Spark | Cache vs Persist | Spark Storage Level with Persist |Partial Data Caching
 
 ### Spark Hands on
-#### Data Persitence
+#### Data Persistence
 
+The caching operation is a Transformation type operation, not an Action. Hence, to achive Caching, an action needs to be performed. When caching `Count()` or `Write()` is preferred, as these will scan the entire dataframe, resulting in proper caching.  
+```
+// How to cache a dataframe
+df.cache()
 
+// Adding an Actions to the Cache
+df.cache().count()  // Default behaviour = MEMORY_AND_DISK
+
+// Remove the cache
+df.unpersist() // this is an Action operation
+```
+
+The cache can be configured in various modes. If there is not enough memory the cache will be written both on Disk and Memory (this is if default configurations are selected.). 
+
+#### Data Lineage and Cache
+Spark keeps track of data lineage. This can be tested by caching a dataframe that is based on a source dataframe. Then performing some read on the source dataframe, this operation will read from the cached dataframe instead of the source dataframe.   
+A partial match on the cached data will enforce a complete scan of the source data. This requires carefull cache configuration, otherwise there is a risk of inefficient cache processing. 
+
+```
+// Cache some data
+df_cache = df.cache()
+
+// Perform the cache through an Action operation
+df_cache.count()
+
+// Verify cache is read, and not source dataframe 
+df.where("column_name > n").show()
+```
+
+#### Data Caching Storage Levels
+The storage level can be configured for each cache instance with the `persist()` function. 
+```
+import pyspark
+
+// configure storage level
+df_persist = df.persist(pyspark.StorageLevel.MEMORY_ONLY) // MEMORY_ONLY can be switched for the storage level desired
+
+// Add Cache
+df_persist.write.format("noop").mode("overwrite").save() // "noop" flag will ensure write is run, but nothing is written.
+
+// Unpersist the cache
+df_persist.unpersist()
+```
+
+NB. When caching with `persist()` the data will be serialized, while caching with `cache()` will save the data as deserialized. When data is serializing and the storage level is set to MEMORY it is important that the data fits in memory, otherwise a memory out of bounds error will be throwen. 
+
+#### Global Cache Clear
+```
+spark.catalog.clearCache()
+```
 
 
 # Lesson 21
-## 
+## Broadcast Variable and Accumulators in Spark | How to use Spark Broadcast Variables
 
 ### Spark Hands on
+#### Distributed Shared Variables
+```
+
+```
 
 
 # Lesson 22
 ## 
 
 ### Spark Hands on
+```
+
+```
 
