@@ -589,7 +589,7 @@ type(broadcast_variable_name)
 broadcast_variable_name.value
 ```
 
-#### How to use a bradcast variable
+#### How to use a broadcast variable
 ```
 from pyspark.sql.functions import udf, col
 
@@ -602,7 +602,7 @@ dataframe_result = dataframe.withColumn("broadcast_var", get_broadcast_variable(
 ```
 
 #### Accumulators - distributed shared variable
-Accumulators allow for the capability to save work done for each executor and then use these values when an aggregate value is required. This reduces the need to merge the data in one executor to aggregate over the data.   
+Accumulators allow for the capability to save work done for each executor and then use these values when an aggregate value is required. This reduces the need to shuffle the data in one executor to aggregate over the data.   
 
 ```
 // Without accumulator
@@ -611,20 +611,74 @@ from pyspark.sql.functions import sum
 df_sum = df.where("some condition").groupby("column_name").agg(sum("column_name"))
 
 // With Accumulator
+df_acc = spark.sparkContext.accumulator(0) // 0 is the default value - evaluate based on what you want to resolve for
 
+def calculate_column(column_id, column_name):
+    if "some condition":
+        df_acc.add(column_name)
+
+df.foreach(lambda row : calculate_column(row.column_id, row.column_name))
+
+// Get the accumulator value
+df_acc.value
 ```
-
-
 
 
 
 # Lesson 22
-## 
+## Optimize Joins in Spark & Understand Bucketing for Faster joins |Sort Merge Join |Broad Cast Join
 
 ### Spark Hands on
+#### Optimize Joins
+Joins in Spark is prone to inefficiencies due to partitions. Depending on how the data is read/partitioned, joins might require data read, shuffle, join, and then an action operation. 
+
+#### Join Strategy -  ShuffleHash
+1. Shuffle data
+2. Smaller dataset hashed
+3. Hashed dataset will be matched with big dataset
+4. Joining will take place
+
+This approach is a reliable approach when one dataset that is smaller/hashable/fits in memory.
+
+
+#### Join Strategy - Sort Merge
+1. Shuffle both datasets
+2. Sort keys of datasets
+3. Merge
+
+Sort is an expensive operation. This join strategy is used when both the datasets are large.
+
+#### Join Strategy - Broadcast
+This strategy will give a performance benefit if at least one dataset can be broadcasted. No shuffle step.
+
+1. Smaller dataset is broadcasted
+2. Join hash  Broadcast
+
+This approach is viable for when there is a big and a small dataset. Default value of the smaller dataset should be 10Mb, it can be increased to 8Gb. A large dataset can result in a memory out of bounds error. Be vary of this.
+
+How to
+```
+// Regular Join 
+df_joined = df_big.join(df_small, on=df_big.id==df_small.id, how="left_outer")
+
+// Broadcast Join 
+from pyspark.sql.functions import broadcast
+
+df_joined = df_big.join(broadcast(df_small), on=df_big.id==df_small.id, how="left_outer")
+
+// SortMerge without buckets
+df_joined = df_big1.join(df_big2, on=df_big1.id==df_big2.id, how="left_outer")
 ```
 
+#### Bucket strategy
+Bucketing the data can result in performance benefit during joining of data. To bucket means to divide the data into seperate partitions. Doing the same based on the same KEY, can allow to read bucket data within the same executors, and hence avoid shuffling during joins.
+
 ```
+// Bucketing during write
+df.write.format("csv").mode("overwrite").bucketBy(n_buckets, "column_to_bucket_by").option("header", True).option("path", "path_to_file").saveAsTable("df_bucket")
+```
+
+Performing a join on the data bucketed, will result in perfomance increase as this avoids shuffling data.
 
 
 # Lesson 23
