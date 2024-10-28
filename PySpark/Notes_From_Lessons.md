@@ -572,12 +572,62 @@ spark.catalog.clearCache()
 
 ### Spark Hands on
 #### Distributed Shared Variables
+
+Motivation behind `Broadcast Variables`: For instanse, when wanting to enrich a dataframe by its relation with another table, there are several approaches:
+1. Join tables, with the risk of performing a shuffle (which is expenisve)
+2. Add the data with a lookup function in a UDF, the data will be serialized and deserialized when the udf is run row by row (which is expenisve)
+3. Broadcast Variable/Distributed Shared Variable: Sent to each executor and cached there.
+
+#### How to broadcast variable
+```
+broadcast_variable_name = spark.sparkContext.broadcast(variable_to_be_broadcasted)
+
+// get type of variable
+type(broadcast_variable_name)
+
+// get value of variable
+broadcast_variable_name.value
 ```
 
+#### How to use a bradcast variable
 ```
+from pyspark.sql.functions import udf, col
+
+@udf
+def get_broadcast_variable(variable_index):
+    return broadcast_variable_name.value.get(variable_index)
+
+
+dataframe_result = dataframe.withColumn("broadcast_var", get_broadcast_variable(col("some_index_id")))
+```
+
+#### Accumulators - distributed shared variable
+Accumulators allow for the capability to save work done for each executor and then use these values when an aggregate value is required. This reduces the need to merge the data in one executor to aggregate over the data.   
+
+```
+// Without accumulator
+from pyspark.sql.functions import sum
+
+df_sum = df.where("some condition").groupby("column_name").agg(sum("column_name"))
+
+// With Accumulator
+
+```
+
+
+
 
 
 # Lesson 22
+## 
+
+### Spark Hands on
+```
+
+```
+
+
+# Lesson 23
 ## 
 
 ### Spark Hands on
