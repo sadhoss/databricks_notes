@@ -682,10 +682,92 @@ Performing a join on the data bucketed, will result in perfomance increase as th
 
 
 # Lesson 23
+## Static vs Dynamic Resource Allocation in Spark | Dynamic Allocation vs Databricks Scale up
+
+### Spark Hands on
+#### Resource Management on Cluster
+- Static Allocation; when one application blocks all the resources.
+- Dynamic Allocation; resources will scale up and down based on usage. Dynamic allocation is not enabled by default.
+
+```
+// To enable dynamic allocation these configurations need to be set
+.config("spark.dynamicAllocation.enabled", True)
+.config("spark.dynamicAllocation.minExecutors", 0)
+.config("spark.dynamicAllocation.maxExecutors", 5)
+.config("spark.dynamicAllocation.initialExecutors", 1)
+.config("spark.dynamicAllocation.shuffleTracking.enabled", True)
+.config("spark.dynamicAllocation.executorIdleTimeout", 60s)
+.config("spark.dynamicAllocation.cachedExecutorIdleTimeout", 60s)
+```
+
+
+
+# Lesson 24
+## Fix Skewness and Spillage with Salting in Spark | Salting Technique | How to identify Skewness
+
+### Spark Hands on
+# Skewness
+__Skewness__ in data is when a significant amount of the data can be assigned to one group. In joining a data based on ids, if the id column has the skew characteristics, Spark might have to perform significantly more joining for some ids vs others. This in turn can result in spillage og data. 
+
+__Spillage__ in spark occures when the data does not fit in memory and needs to be written to disk. This results in inneficient processing, as data needs to be serialized and deserialized. Resulting in higher IO costs.
+
+__Salting__ is a technique that allows us to partition the data evenly. This requires to add salt in the column that feature the skewness. This in practice meanse to add a suffix to the key and convert these keys in uniqe new partitions that result in evenly divided keys.
+
+```
+// Prepare Salt
+import random
+from pyspark.sql.functions import udf
+
+// UDF to return a random number every time and add to dataframe_join1 as salt
+@udf
+def salt_udf():
+    return random.randint(0,16)
+
+
+// salt data frame to add to dataframe_join2
+salt_df = spark.range(0, 16) // keys to match number of partitions
+
+
+// salt dataframe_join1
+from pyspark.sql.functions import lit, concat
+
+salted_df_join1 = dataframe_join1.withColumn("salted_key", concat("key", lit("_"), salt_udf()))
+
+// salt dataframe_join2
+salted_df_join2 =  dataframe_join2.join(salt_df, how="cross").withColumn("salted_key", concat("key", lit("_"), salt_udf()))
+
+// join with salt
+joined_df = salted_df_join1.join(salted_df_join2, on=salted_df_join1.salted_key==salted_df_join2.salted_key, how="left_outer")
+
+// check partitions distribution
+from pyspark.sql.functions import spark_partition_id, count
+
+part_df = joined_df.withColumn("partition_num", spark_partition_id()).groupby("partition_num").agg(count(lit(1)).alias("count"))
+
+part_df.show()
+
+```
+
+NB. Skewness resolved with salting technique is not reccomended everywhere. Only when experiencing memory issues due to spillage, salting is an option!
+
+
+# Lesson 25
+## AQE aka Adaptive Query Execution in Spark | Coalesce Shuffle Partitions | Skew Partitions Fix
+
+### Spark Hands on
+
+
+```
+
+```
+
+
+
+
+# Lesson 26
 ## 
 
 ### Spark Hands on
 ```
 
 ```
-
