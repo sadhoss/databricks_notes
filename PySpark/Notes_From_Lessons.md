@@ -755,16 +755,31 @@ NB. Skewness resolved with salting technique is not reccomended everywhere. Only
 ## AQE aka Adaptive Query Execution in Spark | Coalesce Shuffle Partitions | Skew Partitions Fix
 
 ### Spark Hands on
+#### Adaptive Query Execution
+AQE provides several functionalities that enhances the performance of spark:
 
+1. Coalescing post shuffel - remove unecessary shuffel partitions; this allows spark to automatically fit the number of partitions to the job post shuffle, instead of the default 200 partitions.
 
-```
+2. Skewed join optimization (balance partition size) - join smaller partitions and split bigger partitions.
 
-```
+3. Fix partition size to avoid skew; It is possible to manually set the thresholds for when spark should consider a partition as skewed. Both the minimum and the maximum size can be set, default values are 64MB and 245MB. 
 
-
+4. SortMerge to Broadcast Join; AQE will automatically convert sort merge join to broadcast join for smaller datasets.
 
 
 # Lesson 26
+## Spark SQL, Hints, Spark Catalog and Metastore | Hints in Spark SQL Query | SQL functions & Joins
+
+### Spark Hands on
+#### Spark SQL
+
+
+```
+
+```
+
+
+# Lesson 27
 ## 
 
 ### Spark Hands on
