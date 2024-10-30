@@ -772,14 +772,160 @@ AQE provides several functionalities that enhances the performance of spark:
 
 ### Spark Hands on
 #### Spark SQL
+```
+// show database
+db = spark.sql("show databases")
+db.show()
 
+// show tables
+spark.sql("show tables in default").show()
 
+// register dataframes as Views
+dataframe.createOrReplaceTempView("dataframe_view") // will create session views, will be removed when session is ended
 ```
 
+Multipline query in spark, requires 3x "
 ```
+spark.sql("""
+    select * from dataframe_view
+    where some_condition
+""").show()
+```
+
+Create a new Column
+```
+spark.sql("""
+    select d.*, date_format(date_column, 'yyyy') as date_column_year from dataframe_view d
+    where some_condition
+""")
+```
+
+Create temp view
+```
+var_name = spark.sql("""
+    select d.*, date_format(date_column, 'yyyy') as date_column_year from dataframe_view d
+    where some_condition
+""")
+
+var_name.createOrReplaceTempView("temp_view")
+
+// show data from temp_view
+spark.sql("select * from temp_view").show()
+```
+
+HINTS in Spark.sql(); to give hints in sql queries you need to give the hin like so /*+ HINT */   
+
+To persist the catalog (metadata of the data) spark needs to be configured with hive. Otherwise the catalog will be dropped by default as it is in memory.
 
 
 # Lesson 27
+## Read and Write from Azure Cosmos DB using Spark | E2E Cosmos DB setup | NoSQL vs SQL Databases
+
+### NoSQL database - Azure Cosmos DB
+
+
+
+# Lesson 28
+## Get Started with Delta Lake using Databricks | Benefits and Features of Delta Lake | Time Travel
+
+Deltalake offers many capabilities, four of the most important features are the following:
+1. __ACID Transactions__
+    - __Atomicity__ - Single, indivisible unit of work
+    - __Consistency__ - Consistent database state
+    - __Isolation__ - Concurrent transactions without interferrance 
+    - __Durability__ - Permanent change, tolerates system failure 
+2. __Time Travel__ - Access/recert to ealier versions of data
+3. __Schema Evolution/Enforcment__ - Prevent bad data from causing data corruption 
+4. __DML(Data Manipulation Language) Operations__ - Enabling merge, update and delete operations on
+
+
+#### DeltaLake + Databricks
+
+How to read a table in databricks in python
+```
+df = spark.read.table("table_name")
+
+// read a specific version of the table
+df = spark.read.table("table_name@<version>")
+```
+How to read a table in databricks in sql
+```
+select * from table_name
+
+// read a specific version of the table
+select * from table_name@<version>
+```
+
+Convert Parquet data to Delta data
+```
+// To verify if data is DeltaTable
+DeltaTable.isDeltaTable(sprak, "dir/path/to/data")
+
+// convert to delta from parquet
+DeltaTable.convertToDelta(Spark, "parquet. `dir/path/to/data`")
+
+// show data - validate delta_log is present to verify DeltaTable
+display(dbutils.fs.ls("dir/path/to/data"))
+
+// update metadata
+CONVERT TO DELTA table_name
+
+// verify metadata is updated too, field Provider needs to show delta
+describe extended table_name
+``` 
+
+Revert back to an earlier version 
+```
+%sql
+RESTORE TABLE table_name TO VERSION AS OF <version_number>
+```
+
+Clean up version files for delta data
+```
+dt = DeltaTable.forName(spark, "table_name")
+
+dt.vacuume(0) // will result in confirmation prompt
+
+// if you want to force vaccume add settings
+spark.conf.set("spark.databricks.selta.retentionDurationCheck.enabled", "false")
+```
+
+# Lesson 29
+## Optimize Data Scanning with Partitioning in Spark | How Partitioning data works | Optimize Jobs
+
+### Spark Hands on
+#### Data Scanning & Big Data
+For the Delta format it is important to be aware of __data scanning__, and when it occures. Data scanning is the operation of scanning the data for the required data. Since the delta foramt partitions the data and saves it in multiple files, spark will have to scan all the files for the required data. this can result in performance inefficiencies.  
+
+This can be solved by underdstanding the data requirments and performing the partitioning in a way that results in faster read operations. It is important that the __partitioning__ column is a column that is part of frequently(business critical) used - as these will benefit from the performance increase!
+
+__High Cardinality__ Columns are to be avoided, as these will create too many partitions. Which can eat up the performance benefit of partitioning the data. Also knowen as "small-file issue"
+
+
+How to partition
+```
+df.parquet.write.format(parquet).mode("overwrite").partitionBy("column_name").option("path", "dir/to/data/").saveAsTabel("table_name")
+
+// read specific partition
+df_partition = spark.read.parquet("dir/to/data/")
+
+df.partition.where(column_name == "query_key" and some_more_condition).count()
+```
+
+
+
+# Lesson 30
+## Data Skipping and Z-Ordering in Delta Lake Tables | Optimize & Data Compaction Delta Lake Tables
+
+### Spark Hands on
+```
+
+```
+
+
+
+
+# Lesson 31
 ## 
 
 ### Spark Hands on
