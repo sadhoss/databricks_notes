@@ -918,17 +918,62 @@ df.partition.where(column_name == "query_key" and some_more_condition).count()
 ## Data Skipping and Z-Ordering in Delta Lake Tables | Optimize & Data Compaction Delta Lake Tables
 
 ### Spark Hands on
+
+#### Z-Ordering
+Z-ordering enforces ordering on the column configured for z-ordering. This column will be sorted, and 
+then the data will be distributed across files based on the sorted column. This will allow skipping of 
+files when quering on the sorted column. Important to z-order on columns that are being queried, 
+otherwise there wont be any performance benefit. 
+
+In databricks it is important to note a spesific configuration: `spark.databricks.delta.optimize.maxFilesSize`.
+This fielld is by default configured to 1Gb, this means spark will try to optimize data within the bounderies of 
+1Gb per file. hence if the data size is 1.2Gb only 2 files will be created. To utilize the features of
+Z-ordering the field needs to be configured according to the data size. Otherwise, the performance benefit
+might not be achived. Field is set in Bytes.
+
+How to configure file size
+```
+spark.conf.set("spark.databricks.delta.optimize.maxFilesSize", 64*1024*8) // 64Mb
 ```
 
+Implement Z ordering
+```
+%sql
+OPTIMIZE table_name ZORDER BY (column_name)
+
+// verify partition min and max
+select min(column_name), max(column_name), _metadata.file_name from table_name
+groupby _metadata.file_name
+order by min(column_name)
+
+// multi column z-ordering
+OPTIMIZE table_name ZORDER BY (column_name, column_name2)
 ```
 
+#### Partitioning & Z-Ordering
+It is posible to partition a dataset based on some column, and then z-order the partition. 
+This is data skipping at its best. 
 
+```
+%sql 
+OPTIMIZE table_name where some_condition_on_partitioned_column ZORDER BY (other_column) 
+```
 
 
 # Lesson 31
-## 
+## Delta Tables - Deletion Vectors and Liquid Clustering | Optimize Delta Tables | Delta Clustering
 
 ### Spark Hands on
-```
 
-```
+#### Deletion Vectors
+Deletion vectors in essense means to add another column. This column, a boolean, indicates if a column is to be deleted.
+During tagging of deletion, this column will be true, and no furdther operations are made, however, the next time a 
+write operation is performed, this column is scanned and records marked in the to be deleted column, will be deleted.
+This enables us to cluster write operations, and reduce number of deletion&write combinations.    
+
+
+#### Liquid Clustering
+Liquid clustering improves the existing partitioning and ZORDER techniquies be simpifying data layout
+decisions in order to optimize query performance. Liquid clustering provides flexibility to redefine 
+clustering columns without rewriting existing data, allowing data layout to evolve alongside 
+analytic needs over time.
