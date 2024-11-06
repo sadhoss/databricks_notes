@@ -1,4 +1,4 @@
-# Lesson 1:
+# Lesson 2
 ## Databricks Lakehouse
 
 ![Databricks Overview](image.png)
@@ -33,7 +33,7 @@ Data Intelligence = Data Lakehouse + generative AI
 Data Lakehouse = Data Warehouse + Data Lake
 
 
-# Lesson 2:
+# Lesson 3
 ## Databricks High Level Architecture | Understand Control Plane & Data Plane | Roles in Databricks
 
 Databricks can be served by AWS, Azure and GCP. In Databricks you can havae an account, and this account can then create workspaces (WS). Each account can have several WS. The account governs several aspects of databricks, such as metastore for WS, users, groups and service principles. Workspaces are assigned uniqe IDs, these IDs can be seen in the URLs for the workspaces. 
@@ -73,7 +73,7 @@ Roles databricks provides:
     - can delegate access/permission to the object
 
 
-# Lesson 3
+# Lesson 4
 ## Setup Databricks on Azure | Create your first Databricks Workspace | How to Databricks free trial
 
 Pricing:
@@ -89,7 +89,7 @@ In Azure:
 A VNet was created manually, CIDR was divided between a public and a private subnet. This is then configured to be used by the Databricks workspace instead of it creating a managed VNET. 
 
 
-# Lesson 4
+# Lesson 5
 ## Understand Databricks Account Console | User Management in Databricks | Workspace Management
 
 This UI enables administration of following services:
@@ -101,7 +101,7 @@ This UI enables administration of following services:
 - Settings: *Feature enabelment
 
 
-# Lesson 5
+# Lesson 6
 ## Databricks Workspace & Notebooks | Cell Magic commands | Version History | Comments | Variables
 
 The workspace admin configures what capability and services are visible/enabled for the user logging into the databricks workspace. This is seen from the Navigation field to the left, and what functionality/services are visible.
@@ -128,7 +128,7 @@ Top Section of the workspace Nav bar.
     - Remove Photon to reduce cost 
 
 
-# Lesson 6 
+# Lesson 7 
 ## How Databricks work with Azure | Managed Storage Container | Databricks clusters using Azure VMs
 
 The managed resource group created during the provision of the Databricks Workspace has either 3 or 4 resources from the get-go.
@@ -140,7 +140,7 @@ The managed resource group created during the provision of the Databricks Worksp
 When a cluster is provisioned, databricks will create these in the managed azure resource group. On Termination, these are deleted. 
 
 
-# Lesson 7
+# Lesson 8
 ## What is Unity Catalog and Databricks Governance | What is Metastore | Unity Catalog Object Model🔥
 
 What is Governance; To make the data secure, awailalbe and accurate. Unity Catalog, is an open source Unified Governance. Define it once, and you can secure it everywhere. It is Centrilized, it provides security, auditing, lineage capability, data discovery and it is open source (available in GitHub).
@@ -151,7 +151,7 @@ Before Unity Catalog every workspace had to be administrated individually, now t
 
 
 
-# Lesson 8
+# Lesson 9
 ## Legacy Hive Metastore Catalog in Databricks | What are Managed Table and External Table | DBFS
 
 ### HOW TO
@@ -217,7 +217,7 @@ SELECT * FROM bronze.emp_ext where dept_code = 'D101'
 The above is a permanent View, there exists also temporary views and materilized views. A view will run the query you defined the view with once you query that view. 
 
 
-# Lesson 9
+# Lesson 10
 ## Enable Unity Catalog and Setup Metastore | How to setup Unity Catalog for Databricks Workspace
 
 To Create a Unity Catalog:
@@ -235,7 +235,7 @@ To Create a Unity Catalog:
 The User who configured the Metastore is the Metastore admin.
 
 
-# Lesson 10
+# Lesson 11
 ## Catalog, External Location & Storage Credentials in Unity Catalog |Catalog with External Location
 
 Location in Unity Catalog is inherated. Hence if you define a location at one level, the below levels will by default store data at the same location.   
@@ -302,7 +302,7 @@ COMMENT 'This is an external storage catalog'
 ;
 ```
 
-# Lesson 11
+# Lesson 12
 ## Schemas with External Location in Unity Catalog | Managed Table data Location in Unity Catalog
 
 ##### Create schema without external location in dev catalog 
@@ -387,7 +387,7 @@ By describing the data, we see;
 2. For `dev_ext.bronze` the data is stored in managed tables in the defined location of the catalog dev_ext. 
 3. For `dev_ext.bronze_ext` the data is stored in managed tables in the defined location of the schema dev_ext.bronze_ext. 
 
-# Lesson 12
+# Lesson 13
 ### Managed & External Tables in Unity Catalog vs Legacy Hive Metastore | UNDROP Tables in Databricks
 
 In order to create an external tables, a location needs to be defined in unity catalog as an external location. This external location in turn required a storage credential.
@@ -446,7 +446,7 @@ Incase of external tables: data will never be deleted, it will remain in the sto
 > Hence if you accidently drop a table, it is possible to undrop it with unity catalog within the retnetion period.
 
 
-# Lesson 13
+# Lesson 14
 ### Delta Tables Deep & Shallow Clones | Temporary & Permanent Views | List Catalog, Schemas & Tables
 
 In order to list available assets the following query can be utilized:
@@ -534,7 +534,7 @@ The Shallow Clone command will create a new Table with a uniqe ID, but this tabl
 Doing changes to the shallow clone will only affect the shallow clone, not the source table. This change will be tracked in the location of the shallow table, and the table will get a new version.
 
 
-# Lesson 14
+# Lesson 15
 ## Delta Tables MERGE and UPSERTS | SCD1 in Delta | Soft Delete with Incremental data using Merge
 
 `Merge` in Delta table; Merge is also referred to as `Upsert` which means update or insert. Upsert is also knowen as `SCD1` in datawarehousing terms.  
@@ -610,7 +610,7 @@ tt.is_active = 'N'
 ``` 
 
 
-# Lesson 15
+# Lesson 16
 ## Delta Tables Liquid Clustering and Deletion Vectors | Optimize Delta Tables | Delta Clustering
 
 
@@ -691,7 +691,7 @@ read_files(
 The clustering column selected need to be a column within the first 32 columns of the delta table.
 
 
-# Lesson 16
+# Lesson 17
 ## Volumes - Managed & External in Databricks | Volumes in Databricks Unity Catalog |Files in Volume
 
 ### Volumns - Requires DBR 13.3 LTS+ & Unity Catalog enabled
@@ -731,7 +731,7 @@ In volumns file paths need to have a certaion format.
 ### Dropping Volumns
 The same rules apply for Volumn as for Tables. If a managed volumn is dropped, both metadata and data is dropped. For external Volumns only the metadata is dropped.
 
-# Lesson 17
+# Lesson 18
 ## DBUTILS command | Databricks Utilities | Create Widgets in Databricks Notebooks |DBUTILS FS usage
 
 #### File Systems: dbutils.fs
@@ -752,7 +752,7 @@ Provides utilities for leveraging secrets within notebooks.
 It is possible to run other notebooks, and capture exit values of notebooks. 
 
 
-# Lesson 18
+# Lesson 19
 ## Orchestrating Notebook Jobs, Schedules using Parameters | Run Notebook from another Notebook
 
 ### Parameterizing Notebooks - Run notebook as a job
@@ -767,7 +767,7 @@ Workflow
 In the Notebook UI it is possible to schedule the notebook as a workflow.
 
 
-# Lesson 19
+# Lesson 20
 ## Databricks Computes - All Purpose & Job | Access Modes | Cluster Policies | Cluster Permissions
 
 ### Compute
@@ -797,7 +797,7 @@ Compute configuration:
 Computes that are restricted to job runs only. These can be defined and created in workflows.
 
 
-# Lesson 20
+# Lesson 21
 ## Custom Cluster Policy in Databricks | Create Instance Pools | Warm Instance Pool
 
 ### Custom policies for Clusters
@@ -807,7 +807,11 @@ With custom policies you can define cumpute policies. These policies can restric
 This option allows to have warm nodes available for time sensitive jobs.
 
 
-# Lesson 21
-## 
+# Lesson 22
+## Workflows, Jobs & Tasks | Pass Values within Tasks | If Else Cond | For Each Loop & Re-Run Jobs
+
+
+# Lesson 23
+## Databricks COPY INTO command | COPY INTO Metadata | Idempotent Pipeline | Exactly Once processing
 
 
